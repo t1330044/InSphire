@@ -17,6 +17,9 @@
 		C44A2DB61A0B65C900A20C1F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C44A2DB51A0B65C900A20C1F /* CoreMotion.framework */; };
 		C44A2DB81A0B69D800A20C1F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C44A2DB71A0B69D800A20C1F /* AVFoundation.framework */; };
 		C4E2C1C01A39684C00427CA3 /* SEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C4E2C1BF1A39684C00427CA3 /* SEManager.m */; };
+		C4E2C1C41A3AACA200427CA3 /* water_big.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C4E2C1C31A3AACA200427CA3 /* water_big.mp3 */; };
+		C4E2C1C61A3AACA700427CA3 /* water_middle.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C4E2C1C51A3AACA700427CA3 /* water_middle.mp3 */; };
+		C4E2C1C81A3AACAC00427CA3 /* water_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C4E2C1C71A3AACAC00427CA3 /* water_small.mp3 */; };
 		C4EF5F901A1B857900AF138A /* pianoA_.wav in Resources */ = {isa = PBXBuildFile; fileRef = C4EF5F831A1B857900AF138A /* pianoA_.wav */; };
 		C4EF5F911A1B857900AF138A /* pianoA.wav in Resources */ = {isa = PBXBuildFile; fileRef = C4EF5F841A1B857900AF138A /* pianoA.wav */; };
 		C4EF5F921A1B857900AF138A /* pianoB.wav in Resources */ = {isa = PBXBuildFile; fileRef = C4EF5F851A1B857900AF138A /* pianoB.wav */; };
@@ -60,6 +63,9 @@
 		C44A2DB71A0B69D800A20C1F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		C4E2C1BE1A39684C00427CA3 /* SEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SEManager.h; sourceTree = "<group>"; };
 		C4E2C1BF1A39684C00427CA3 /* SEManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SEManager.m; sourceTree = "<group>"; };
+		C4E2C1C31A3AACA200427CA3 /* water_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = water_big.mp3; sourceTree = "<group>"; };
+		C4E2C1C51A3AACA700427CA3 /* water_middle.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = water_middle.mp3; sourceTree = "<group>"; };
+		C4E2C1C71A3AACAC00427CA3 /* water_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = water_small.mp3; sourceTree = "<group>"; };
 		C4EF5F831A1B857900AF138A /* pianoA_.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pianoA_.wav; sourceTree = "<group>"; };
 		C4EF5F841A1B857900AF138A /* pianoA.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pianoA.wav; sourceTree = "<group>"; };
 		C4EF5F851A1B857900AF138A /* pianoB.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pianoB.wav; sourceTree = "<group>"; };
@@ -135,6 +141,9 @@
 		C44A2D8F1A0B616900A20C1F /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C4E2C1C71A3AACAC00427CA3 /* water_small.mp3 */,
+				C4E2C1C51A3AACA700427CA3 /* water_middle.mp3 */,
+				C4E2C1C31A3AACA200427CA3 /* water_big.mp3 */,
 				C4EF5F831A1B857900AF138A /* pianoA_.wav */,
 				C4EF5F841A1B857900AF138A /* pianoA.wav */,
 				C4EF5F851A1B857900AF138A /* pianoB.wav */,
@@ -258,6 +267,8 @@
 				C4EF5F981A1B857900AF138A /* pianoF_.wav in Resources */,
 				C4EF5F931A1B857900AF138A /* pianoC_.wav in Resources */,
 				C44A2D9B1A0B616900A20C1F /* Main.storyboard in Resources */,
+				C4E2C1C61A3AACA700427CA3 /* water_middle.mp3 in Resources */,
+				C4E2C1C41A3AACA200427CA3 /* water_big.mp3 in Resources */,
 				C4EF5F961A1B857900AF138A /* pianoD.wav in Resources */,
 				C44A2DA01A0B616900A20C1F /* LaunchScreen.xib in Resources */,
 				C4EF5F901A1B857900AF138A /* pianoA_.wav in Resources */,
@@ -267,6 +278,7 @@
 				C4EF5F991A1B857900AF138A /* pianoF.wav in Resources */,
 				C4EF5F9A1A1B857900AF138A /* pianoG_.wav in Resources */,
 				C4EF5F971A1B857900AF138A /* pianoE.wav in Resources */,
+				C4E2C1C81A3AACAC00427CA3 /* water_small.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

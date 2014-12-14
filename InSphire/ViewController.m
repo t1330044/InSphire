@@ -157,30 +157,30 @@
         NSLog(@"- - - -");
     }
     
-    if (nowAccel > 1.3 && nowAccel <= 1.9) {
+    if (nowAccel > 1.6 && nowAccel <= 2.0) {
 
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         
-         [[SEManager sharedManager] playSound:@"pianoC.wav"];
+         [[SEManager sharedManager] playSound:@"water_small.mp3"];
         
         NSLog(@"弱");
         //-------------------------------------------------------------------
     }
-    if (nowAccel > 1.9 && nowAccel <= 2.6) {
+    if (nowAccel > 2.0 && nowAccel <= 2.4) {
         
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         
-        [[SEManager sharedManager] playSound:@"pianoE.wav"];
+        [[SEManager sharedManager] playSound:@"water_middle.mp3"];
         
         NSLog(@"中");
         //-------------------------------------------------------------------
     }
 
-    if (nowAccel > 2.6) {
+    if (nowAccel > 2.4) {
         
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         
-        [[SEManager sharedManager] playSound:@"pianoG.wav"];
+        [[SEManager sharedManager] playSound:@"water_big.mp3"];
         
         NSLog(@"強");
         //-------------------------------------------------------------------
