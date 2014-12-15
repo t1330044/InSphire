@@ -8,8 +8,8 @@
 
 #import "ViewController.h"
 #import <CoreMotion/CoreMotion.h>
-#import "SEManager.h"
-#import "TweetGet.h"
+#import "SEManager.h"  //音声自動生成 ＆ 再生クラス
+#import "TweetGet.h"   //ツイート関連のプロパティ生成
 
 @interface ViewController ()
 
@@ -17,7 +17,8 @@
 {
     //ツイート管理用の親元クラス
     TweetGet *tweet;
-    NSInteger accountIndex;  // クラスでアカウント指定するための引数　これ変更すれば他のアカウントに設定できる
+    NSInteger accountIndex;  // クラスでアカウント指定するための引数　これ変更すれば他のアカウントに設定できる　　　★ここ未実装！！
+    NSInteger soundMode;     // どの音声を鳴らすかグループを選択
     
     //加速度ハンドラ
     CMMotionManager *motionManager;
@@ -51,10 +52,12 @@
         motionManager.deviceMotionUpdateInterval = 1/20;
     }
     
-    // Twitter関連の初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter
+    // Twitter関連の初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter　と　音声モード初期
     tweet = [[TweetGet alloc] init];
     accountIndex = 0;
-    [tweet getTimeLine:accountIndex];
+    soundMode = 20;
+//    [tweet getTimeLine:accountIndex];
+    [self tweetRefresh];
     
     /* 音声　読み込み- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -過去の遺物　イラネ
     NSString *passPa = [[NSBundle mainBundle] pathForResource:@"water_small" ofType:@"mp3"];
@@ -94,7 +97,7 @@
      [twitter addTarget:self action:@selector(showBrowser) forControlEvents:UIControlEventTouchUpInside];
      */
     
-    NSTimer *refresh = [NSTimer scheduledTimerWithTimeInterval:61.0     // 勝手に動くので、unusedエラーは気にしない。
+    [NSTimer scheduledTimerWithTimeInterval:61.0     // 勝手に動くので、unusedエラーは気にしない。と思ったらエラーなくなった。
                                                              target:self
                                                            selector:@selector(tweetRefresh)
                                                            userInfo:nil
@@ -126,6 +129,7 @@
             
             [self getBownd];
             [self getRolling];
+            soundMode = [self soundChange:tweet.tweetText.length];
         };
         
         // 加速度の取得開始
@@ -147,7 +151,8 @@
     
     if (nowAccel < 1.6) {
         fil_pre = 0;
-        NSLog(@"- - - -");
+        NSLog(@"- - %ld - -", (long)soundMode);
+        NSLog(@"%@", tweet.tweetText);
     }
     
     if (nowAccel > 1.6 && nowAccel <= 2.0) {
@@ -156,7 +161,7 @@
         
          [[SEManager sharedManager] playSound:@"water_small.mp3"];
         
-        NSLog(@"弱");
+        NSLog(@"弱：%ld", (long)soundMode);
         //-------------------------------------------------------------------
     }
     if (nowAccel > 2.0 && nowAccel <= 2.4) {
@@ -165,7 +170,7 @@
         
         [[SEManager sharedManager] playSound:@"water_middle.mp3"];
         
-        NSLog(@"中");
+        NSLog(@"中：%ld", (long)soundMode);
         //-------------------------------------------------------------------
     }
 
@@ -175,7 +180,7 @@
         
         [[SEManager sharedManager] playSound:@"water_big.mp3"];
         
-        NSLog(@"強");
+        NSLog(@"強：%ld", (long)soundMode);
         //-------------------------------------------------------------------
     }
 }
@@ -183,12 +188,25 @@
 }
 
 
-//加速度計測- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
+// twitter更新- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
 - (void)tweetRefresh{
     [tweet getTimeLine:accountIndex];
+//    [self soundChange:tweet.tweetText.length];
+    NSLog(@"%@ : %@ : %lu", tweet.userName, tweet.tweetText, (unsigned long)tweet.tweetText.length);   //ログ出力
 }
 
-
+// 音声モード切り替え- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -音声切り替え
+- (int)soundChange:(NSUInteger)textNum{
+    if (textNum < 10) {
+        return 0;
+    }else if(textNum < 50){
+        return 1;
+    }else if(textNum < 100){
+        return 2;
+    }else{
+        return 3;
+    }
+}
 
 
 

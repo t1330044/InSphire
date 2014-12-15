@@ -122,7 +122,7 @@
     _userPic = [UIImage imageWithData:data];                           //ユーザーアイコン出力
     
 //    NSLog(@"%ld / %ld", (long)accountIndex + 1, (long)accountNum);
-    NSLog(@"%@", _tweetText);
+//    NSLog(@"%@, %lu", _tweetText, (unsigned long)_tweetText.length);
 }
 
 
