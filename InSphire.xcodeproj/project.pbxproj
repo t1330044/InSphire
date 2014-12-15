@@ -20,6 +20,9 @@
 		C4E2C1C41A3AACA200427CA3 /* water_big.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C4E2C1C31A3AACA200427CA3 /* water_big.mp3 */; };
 		C4E2C1C61A3AACA700427CA3 /* water_middle.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C4E2C1C51A3AACA700427CA3 /* water_middle.mp3 */; };
 		C4E2C1C81A3AACAC00427CA3 /* water_small.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C4E2C1C71A3AACAC00427CA3 /* water_small.mp3 */; };
+		C4E2C1CB1A3D544200427CA3 /* TweetGet.m in Sources */ = {isa = PBXBuildFile; fileRef = C4E2C1CA1A3D544200427CA3 /* TweetGet.m */; };
+		C4E2C1CD1A3D546F00427CA3 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4E2C1CC1A3D546F00427CA3 /* Social.framework */; };
+		C4E2C1CF1A3D547800427CA3 /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4E2C1CE1A3D547800427CA3 /* Accounts.framework */; };
 		C4EF5F901A1B857900AF138A /* pianoA_.wav in Resources */ = {isa = PBXBuildFile; fileRef = C4EF5F831A1B857900AF138A /* pianoA_.wav */; };
 		C4EF5F911A1B857900AF138A /* pianoA.wav in Resources */ = {isa = PBXBuildFile; fileRef = C4EF5F841A1B857900AF138A /* pianoA.wav */; };
 		C4EF5F921A1B857900AF138A /* pianoB.wav in Resources */ = {isa = PBXBuildFile; fileRef = C4EF5F851A1B857900AF138A /* pianoB.wav */; };
@@ -66,6 +69,10 @@
 		C4E2C1C31A3AACA200427CA3 /* water_big.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = water_big.mp3; sourceTree = "<group>"; };
 		C4E2C1C51A3AACA700427CA3 /* water_middle.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = water_middle.mp3; sourceTree = "<group>"; };
 		C4E2C1C71A3AACAC00427CA3 /* water_small.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = water_small.mp3; sourceTree = "<group>"; };
+		C4E2C1C91A3D544200427CA3 /* TweetGet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TweetGet.h; sourceTree = "<group>"; };
+		C4E2C1CA1A3D544200427CA3 /* TweetGet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TweetGet.m; sourceTree = "<group>"; };
+		C4E2C1CC1A3D546F00427CA3 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		C4E2C1CE1A3D547800427CA3 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		C4EF5F831A1B857900AF138A /* pianoA_.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pianoA_.wav; sourceTree = "<group>"; };
 		C4EF5F841A1B857900AF138A /* pianoA.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pianoA.wav; sourceTree = "<group>"; };
 		C4EF5F851A1B857900AF138A /* pianoB.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pianoB.wav; sourceTree = "<group>"; };
@@ -86,6 +93,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4E2C1CF1A3D547800427CA3 /* Accounts.framework in Frameworks */,
+				C4E2C1CD1A3D546F00427CA3 /* Social.framework in Frameworks */,
 				C44A2DB81A0B69D800A20C1F /* AVFoundation.framework in Frameworks */,
 				C44A2DB61A0B65C900A20C1F /* CoreMotion.framework in Frameworks */,
 			);
@@ -104,6 +113,8 @@
 		C44A2D831A0B616900A20C1F = {
 			isa = PBXGroup;
 			children = (
+				C4E2C1CE1A3D547800427CA3 /* Accounts.framework */,
+				C4E2C1CC1A3D546F00427CA3 /* Social.framework */,
 				C44A2DB71A0B69D800A20C1F /* AVFoundation.framework */,
 				C44A2DB51A0B65C900A20C1F /* CoreMotion.framework */,
 				C44A2D8E1A0B616900A20C1F /* InSphire */,
@@ -130,6 +141,8 @@
 				C44A2D971A0B616900A20C1F /* ViewController.m */,
 				C4E2C1BE1A39684C00427CA3 /* SEManager.h */,
 				C4E2C1BF1A39684C00427CA3 /* SEManager.m */,
+				C4E2C1C91A3D544200427CA3 /* TweetGet.h */,
+				C4E2C1CA1A3D544200427CA3 /* TweetGet.m */,
 				C44A2D991A0B616900A20C1F /* Main.storyboard */,
 				C44A2D9C1A0B616900A20C1F /* Images.xcassets */,
 				C44A2D9E1A0B616900A20C1F /* LaunchScreen.xib */,
@@ -299,6 +312,7 @@
 				C44A2D981A0B616900A20C1F /* ViewController.m in Sources */,
 				C4E2C1C01A39684C00427CA3 /* SEManager.m in Sources */,
 				C44A2D951A0B616900A20C1F /* AppDelegate.m in Sources */,
+				C4E2C1CB1A3D544200427CA3 /* TweetGet.m in Sources */,
 				C44A2D921A0B616900A20C1F /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

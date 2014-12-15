@@ -9,11 +9,16 @@
 #import "ViewController.h"
 #import <CoreMotion/CoreMotion.h>
 #import "SEManager.h"
+#import "TweetGet.h"
 
 @interface ViewController ()
 
 //インスタンス変数宣言ーーーーーーーーーーーーーー
 {
+    //ツイート管理用の親元クラス
+    TweetGet *tweet;
+    NSInteger accountIndex;  // クラスでアカウント指定するための引数　これ変更すれば他のアカウントに設定できる
+    
     //加速度ハンドラ
     CMMotionManager *motionManager;
     double xac, xac_pre1, xac_pre2;
@@ -22,7 +27,7 @@
 }
 
 
-//音声　個別宣言ーーーーーーーーーーーーーーーーー
+//音声　個別宣言ーーーーーーーーーーーーーーーーー過去の遺物　イラネ
 /*
 @property AVAudioPlayer *pianoZC;
 */
@@ -40,34 +45,34 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    // 加速度CoreMotionマネージャ作るーーーーーーーーーーーーーー
+    // 加速度CoreMotionマネージャ作る- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度
     if (! motionManager) {
         motionManager = [[CMMotionManager alloc] init];
         motionManager.deviceMotionUpdateInterval = 1/20;
     }
     
-    // 音声　読み込みーーーーーーーーーーーーーーーーーーーーーーー過去の遺物
-   
-    /*
+    // Twitter関連の初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter
+    tweet = [[TweetGet alloc] init];
+    accountIndex = 0;
+    [tweet getTimeLine:accountIndex];
+    
+    /* 音声　読み込み- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -過去の遺物　イラネ
     NSString *passPa = [[NSBundle mainBundle] pathForResource:@"water_small" ofType:@"mp3"];
     NSURL *passPa = [NSURL fileURLWithPath:w1Pass];
     self.pianoA = [[AVAudioPlayer alloc] initWithContentsOfURL:w1Url error:NULL];
     */
     
-    
-     // ホーム描画 初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     // ホーム描画 初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -画面設定
     CGRect rectHome1 = CGRectMake(10, 10, 500, 500);
     UIImageView *homeView = [[UIImageView alloc]initWithFrame:rectHome1];
     homeView.contentMode = UIViewContentModeCenter;
     // 画像の読み込み
     homeView.image = [UIImage imageNamed:@"ball_bg.png"];
-    
     // UIImageViewのインスタンスをビューに追加
     [self.view addSubview:homeView];
     
    
-     // サーチボタン描画 初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
+    // サーチボタン描画 初期設定
     //search
     UIButton *search = [UIButton buttonWithType:UIButtonTypeSystem];
     [search setImage:[UIImage imageNamed:@"heart.png"]
@@ -75,10 +80,9 @@
     [search sizeToFit];
     search.center = CGPointMake(self.view.frame.size.width - 40, self.view.frame.size.height - 40);
     [self.view addSubview:search];
-    
 //    [search addTarget:self action:@selector(showBrowser) forControlEvents:UIControlEventTouchUpInside];
     
-    // twitterボタン描画 初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // twitterボタン描画 初期設定
     /*
      UIButton *twitter = [UIButton buttonWithType:UIButtonTypeSystem];
      [twitter setImage:[UIImage imageNamed:@"twi_tori.png"]
@@ -90,21 +94,12 @@
      [twitter addTarget:self action:@selector(showBrowser) forControlEvents:UIControlEventTouchUpInside];
      */
     
-    // モード変更ボタン描画 初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    //(ついったボタン流用、あとで直してね★)  初期モードは０＝水
-    /*　　　　　      　　　　　　　　　　　　　　　　　　　　　　　　　　　●
-    UIButton *mode = [UIButton buttonWithType:UIButtonTypeSystem];
-    [mode setImage:[UIImage imageNamed:@"twi_tori.png"]
-          forState:UIControlStateNormal];
-    [mode sizeToFit];
-    mode.center = CGPointMake(40, self.view.frame.size.height - 40);
-    [self.view addSubview:mode];
-    
-    [mode addTarget:self action:@selector(modeChange) forControlEvents:UIControlEventTouchUpInside];
-    */
-    
-    [self setupAccelerometer];
-
+    NSTimer *refresh = [NSTimer scheduledTimerWithTimeInterval:61.0     // 勝手に動くので、unusedエラーは気にしない。
+                                                             target:self
+                                                           selector:@selector(tweetRefresh)
+                                                           userInfo:nil
+                                                            repeats:YES];
+    [self setupAccelerometer];  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度計測開始！！　初期設定以上！！
 }
 
 
@@ -112,9 +107,9 @@
 
 
 
-//ここからメソッド書き出しー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー
+//ここからメソッド書き出しー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー▼▼　メソッド　▼▼
 
-//加速度計測
+//加速度計測- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -ボール挙動用メソッド
 //ーーーーーーーーーーーーーーーーーーーーー常に作動、同時にgetBoundも作動
 - (void)setupAccelerometer{
     if (motionManager.accelerometerAvailable){
@@ -122,7 +117,7 @@
         motionManager.accelerometerUpdateInterval = 0.1f;
         
         // ハンドラを設定
-        CMAccelerometerHandler handler = ^(CMAccelerometerData *data, NSError *error)
+        CMAccelerometerHandler handler = ^(CMAccelerometerData *data, NSError *error)  //ここの関数がなんども呼ばれるよ！！
         {
             // 加速度センサー
             xac = data.acceleration.x;
@@ -131,8 +126,6 @@
             
             [self getBownd];
             [self getRolling];
-
-            
         };
         
         // 加速度の取得開始
@@ -142,7 +135,7 @@
 
 
 //バウンド計算
-//ーーーーーーーーーーーーーーーーーーーーーバウンド監視
+//ーーーーーーーーーーーーーーーーーーーーーバウンド監視して再生
 - (void)getBownd{
     
     int fil_pre = 0;
@@ -185,70 +178,15 @@
         NSLog(@"強");
         //-------------------------------------------------------------------
     }
-/*
-    if (nowAccel > 1.6 && nowAccel <= 2.1 && fil_pre == 0) {   //弱バウンド
-        
-        if (soundMode == 0) {
-            [self.water_small play];
-            NSLog(@"弱バウンド");
-            //テスト用ログ
-            NSLog(@"%.3f" , nowAccel);
-        }else{
-            [self.piano_C play];
-            NSLog(@"弱バウンド");
-            //テスト用ログ
-            NSLog(@"%.3f" , nowAccel);
-        }
-        
-        fil_prepre = fil_pre;
-        fil_pre = 1;
-        
-    }
-    if (nowAccel > 2.1 && nowAccel <= 2.7) {
-        
-        if (soundMode == 0) {
-            [self.water_middle play];  //内部iPhoneとりあえず音発生
-            NSLog(@"中バウンド");
-            //テスト用ログ
-            NSLog(@"%.3f" , nowAccel);
-        }else{
-            [self.piano_E play];  //内部iPhoneとりあえず音発生
-            NSLog(@"中バウンド");
-            //テスト用ログ
-            NSLog(@"%.3f" , nowAccel);
-        }
-        
-    }
-    if (nowAccel > 2.7) {
-        if (soundMode == 0) {
-            [self.water_big play];  //内部iPhoneとりあえず音発生
-            NSLog(@"強バウンド");
-            //テスト用ログ
-            NSLog(@"%.3f" , nowAccel);
-        }else{
-            [self.piano_G play];  //内部iPhoneとりあえず音発生
-            NSLog(@"強バウンド");
-            //テスト用ログ
-            NSLog(@"%.3f" , nowAccel);
-        }
-    }
-*/
 }
-
 - (void)getRolling{
-
-    
 }
 
 
-
-- (void)soundPlay:(NSArray *)array label:(NSInteger)val
-{
-    // 処理
+//加速度計測- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
+- (void)tweetRefresh{
+    [tweet getTimeLine:accountIndex];
 }
-
-
-
 
 
 
