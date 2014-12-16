@@ -7,7 +7,7 @@
 //
 
 #import "SEManager.h"
-#import <AVFoundation/AVFoundation.h>
+
 
 @implementation SEManager
 

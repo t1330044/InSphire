@@ -7,8 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 
-@interface SEManager : NSObject{
+@interface SEManager : NSObject<AVAudioPlayerDelegate>{
     NSMutableArray *soundArray;
 }
 

@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import <CoreMotion/CoreMotion.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import "SEManager.h"  //音声自動生成 ＆ 再生クラス
 #import "TweetGet.h"   //ツイート関連のプロパティ生成
 
@@ -15,6 +16,9 @@
 
 //インスタンス変数宣言ーーーーーーーーーーーーーー
 {
+    //マイク用のキュー
+    AudioQueueRef queue;
+    
     //ツイート管理用の親元クラス
     TweetGet *tweet;
     NSInteger accountIndex;  // クラスでアカウント指定するための引数　これ変更すれば他のアカウントに設定できる　　　★ここ未実装！！
@@ -96,16 +100,79 @@
      
      [twitter addTarget:self action:@selector(showBrowser) forControlEvents:UIControlEventTouchUpInside];
      */
-    
+/*
     [NSTimer scheduledTimerWithTimeInterval:61.0     // 勝手に動くので、unusedエラーは気にしない。と思ったらエラーなくなった。
                                                              target:self
                                                            selector:@selector(tweetRefresh)
                                                            userInfo:nil
                                                             repeats:YES];
+ */
     [self setupAccelerometer];  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度計測開始！！　初期設定以上！！
+//    [self mikeSetting];
+//    [self timerStart];
 }
 
 
+
+//マイク用初期設定ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー
+static void AudioInputCallback(
+                               void* inUserData,
+                               AudioQueueRef inAQ,
+                               AudioQueueBufferRef inBuffer,
+                               const AudioTimeStamp *inStartTime,
+                               UInt32 inNumberPacketDescriptions,
+                               const AudioStreamPacketDescription *inPacketDescs) {
+}
+- (void)mikeSetting{
+    AudioStreamBasicDescription dataFormat;
+    dataFormat.mSampleRate = 44100.0f;
+    dataFormat.mFormatID = kAudioFormatLinearPCM;
+    dataFormat.mFormatFlags = kLinearPCMFormatFlagIsBigEndian | kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+    dataFormat.mBytesPerPacket = 2;
+    dataFormat.mFramesPerPacket = 1;
+    dataFormat.mBytesPerFrame = 2;
+    dataFormat.mChannelsPerFrame = 1;
+    dataFormat.mBitsPerChannel = 16;
+    dataFormat.mReserved = 0;
+    
+    AudioQueueNewInput(&dataFormat,AudioInputCallback,(__bridge void *)(self),CFRunLoopGetCurrent(),kCFRunLoopCommonModes,0,&queue);
+    AudioQueueStart(queue, NULL);
+    
+    UInt32 enabledLevelMeter = true;
+    AudioQueueSetProperty(queue,kAudioQueueProperty_EnableLevelMetering,&enabledLevelMeter,sizeof(UInt32));
+}
+
+//ツイッターとマイクの更新開始ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー
+- (void)timerStart{
+    NSTimer *timerTwitter = [NSTimer timerWithTimeInterval:61.0
+                                              target:self
+                                            selector:@selector(tweetRefresh)
+                                            userInfo:nil
+                                             repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:timerTwitter forMode:NSDefaultRunLoopMode];
+    
+    NSTimer *timerMike = [NSTimer timerWithTimeInterval:0.2
+                                              target:self
+                                            selector:@selector(updateVolume:)
+                                            userInfo:nil
+                                             repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:timerMike forMode:NSDefaultRunLoopMode];
+}
+//マイク更新　タイマーで勝手に呼ばれるー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー
+- (void)updateVolume:(NSTimer *)timer {
+    AudioQueueLevelMeterState levelMeter;
+    UInt32 levelMeterSize = sizeof(AudioQueueLevelMeterState);
+    AudioQueueGetProperty(queue,kAudioQueueProperty_CurrentLevelMeterDB,&levelMeter,&levelMeterSize);
+    
+    NSLog(@"mPeakPower=%0.9f", levelMeter.mPeakPower);
+    //   NSLog(@"mAveragePower=%0.9f", levelMeter.mAveragePower);
+    
+    if (levelMeter.mPeakPower >= -1.2f) {
+        NSLog(@"hi!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    }else{
+        NSLog(@"low");
+    }
+}
 
 
 
