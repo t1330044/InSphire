@@ -107,9 +107,14 @@
                                                            userInfo:nil
                                                             repeats:YES];
  */
+    AVAudioSession *audiosession = [AVAudioSession sharedInstance];
+//    NSString *const AVAudioSessionCategoryPlayAndRecord;
+    [audiosession setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
+    [audiosession setActive:YES error:nil];
+    
     [self setupAccelerometer];  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度計測開始！！　初期設定以上！！
-//    [self mikeSetting];
-//    [self timerStart];
+    [self mikeSetting];
+    [self timerStart];
 }
 
 
