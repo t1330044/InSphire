@@ -23,12 +23,16 @@
     TweetGet *tweet;
     NSInteger accountIndex;  // クラスでアカウント指定するための引数　これ変更すれば他のアカウントに設定できる　　　★ここ未実装！！
     NSInteger soundMode;     // どの音声を鳴らすかグループを選択
+    NSArray *soundNames; //使うサウンド名を収録
     
     //加速度ハンドラ
     CMMotionManager *motionManager;
     double xac, xac_pre1, xac_pre2;
     double yac, yac_pre1, yac_pre2;
     double zac, zac_pre1, zac_pre2;
+
+    //マイク音量でかいときのフラグ
+    int volumeBig;
 }
 
 
@@ -49,6 +53,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
     
     // 加速度CoreMotionマネージャ作る- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度
     if (! motionManager) {
@@ -107,13 +112,21 @@
                                                            userInfo:nil
                                                             repeats:YES];
  */
+    
+    //ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー再生とマイクの競合を解除、スピーカー使用に設定！！
     AVAudioSession *audiosession = [AVAudioSession sharedInstance];
 //    NSString *const AVAudioSessionCategoryPlayAndRecord;
-    [audiosession setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
+    [audiosession setCategory:AVAudioSessionCategoryPlayAndRecord
+                  withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker
+                        error:nil];
     [audiosession setActive:YES error:nil];
     
     [self setupAccelerometer];  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度計測開始！！　初期設定以上！！
+    
+    //マイクの取得開始
     [self mikeSetting];
+    
+    //マイク、ツイッターのタイマー回すよ！！
     [self timerStart];
 }
 
@@ -147,7 +160,7 @@ static void AudioInputCallback(
     AudioQueueSetProperty(queue,kAudioQueueProperty_EnableLevelMetering,&enabledLevelMeter,sizeof(UInt32));
 }
 
-//ツイッターとマイクの更新開始ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー
+//ツイッターとマイクの更新開始ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ータイマー
 - (void)timerStart{
     NSTimer *timerTwitter = [NSTimer timerWithTimeInterval:61.0
                                               target:self
@@ -163,7 +176,8 @@ static void AudioInputCallback(
                                              repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:timerMike forMode:NSDefaultRunLoopMode];
 }
-//マイク更新　タイマーで勝手に呼ばれるー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー
+
+//マイク更新　タイマーで勝手に呼ばれるー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ーvolumeBigいじる
 - (void)updateVolume:(NSTimer *)timer {
     AudioQueueLevelMeterState levelMeter;
     UInt32 levelMeterSize = sizeof(AudioQueueLevelMeterState);
@@ -172,10 +186,12 @@ static void AudioInputCallback(
     NSLog(@"mPeakPower=%0.9f", levelMeter.mPeakPower);
     //   NSLog(@"mAveragePower=%0.9f", levelMeter.mAveragePower);
     
-    if (levelMeter.mPeakPower >= -1.2f) {
+    if (levelMeter.mPeakPower >= -1.4f) {
         NSLog(@"hi!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        volumeBig = 1;
     }else{
         NSLog(@"low");
+        volumeBig = 0;
     }
 }
 
@@ -223,12 +239,11 @@ static void AudioInputCallback(
     
     if (nowAccel < 1.6) {
         fil_pre = 0;
-        NSLog(@"- - %ld - -", (long)soundMode);
-        NSLog(@"%@", tweet.tweetText);
+        NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
+        NSLog(@"ツイート内容：　%@", tweet.tweetText);
     }
     
-    if (nowAccel > 1.6 && nowAccel <= 2.0) {
-
+    if (nowAccel > 1.6 && nowAccel <= 1.9) {
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         
          [[SEManager sharedManager] playSound:@"water_small.mp3"];
@@ -236,8 +251,7 @@ static void AudioInputCallback(
         NSLog(@"弱：%ld", (long)soundMode);
         //-------------------------------------------------------------------
     }
-    if (nowAccel > 2.0 && nowAccel <= 2.4) {
-        
+    if (nowAccel > 1.9 && nowAccel <= 2.2) {
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         
         [[SEManager sharedManager] playSound:@"water_middle.mp3"];
@@ -246,13 +260,16 @@ static void AudioInputCallback(
         //-------------------------------------------------------------------
     }
 
-    if (nowAccel > 2.4) {
+    if (nowAccel > 2.2) {
         
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
-        
+        if (volumeBig == 1) {
+            
         [[SEManager sharedManager] playSound:@"water_big.mp3"];
         
         NSLog(@"強：%ld", (long)soundMode);
+            
+        }
         //-------------------------------------------------------------------
     }
 }
