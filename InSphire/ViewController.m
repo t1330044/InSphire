@@ -23,7 +23,7 @@
     TweetGet *tweet;
     NSInteger accountIndex;  // クラスでアカウント指定するための引数　これ変更すれば他のアカウントに設定できる　　　★ここ未実装！！
     NSInteger soundMode;     // どの音声を鳴らすかグループを選択
-    NSArray *soundNames; //使うサウンド名を収録
+    NSMutableArray *soundNames; //使うサウンド名を収録
     
     //加速度ハンドラ
     CMMotionManager *motionManager;
@@ -54,6 +54,9 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
+    //音の配列を作る
+    [self soundSet];
+    NSLog(@"%@", [[soundNames objectAtIndex:0] objectAtIndex:0]);//確認
     
     // 加速度CoreMotionマネージャ作る- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度
     if (! motionManager) {
@@ -131,6 +134,16 @@
 }
 
 
+//音の配列作るメソッドーーーーーーーーーーーーーーーーーーー！！　ここで音の名前設定してね　！！
+- (void)soundSet{
+    soundNames = [NSMutableArray arrayWithCapacity:5];
+    [soundNames addObject:@[@"water_small.wav", @"water_middle.wav", @"water_big.wav"]]; //water-0
+    [soundNames addObject:@[@"orgor_small.wav", @"orgor_middle.wav", @"orgor_big.wav"]]; //orgor-1
+    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2
+    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2
+}
+
+
 
 //マイク用初期設定ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー
 static void AudioInputCallback(
@@ -160,7 +173,7 @@ static void AudioInputCallback(
     AudioQueueSetProperty(queue,kAudioQueueProperty_EnableLevelMetering,&enabledLevelMeter,sizeof(UInt32));
 }
 
-//ツイッターとマイクの更新開始ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ータイマー
+//ツイッターとマイクの更新開始ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー タイマー
 - (void)timerStart{
     NSTimer *timerTwitter = [NSTimer timerWithTimeInterval:61.0
                                               target:self
@@ -177,7 +190,7 @@ static void AudioInputCallback(
     [[NSRunLoop currentRunLoop] addTimer:timerMike forMode:NSDefaultRunLoopMode];
 }
 
-//マイク更新　タイマーで勝手に呼ばれるー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ーvolumeBigいじる
+//マイク更新　タイマーで勝手に呼ばれるー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー volumeBigフラグ更新
 - (void)updateVolume:(NSTimer *)timer {
     AudioQueueLevelMeterState levelMeter;
     UInt32 levelMeterSize = sizeof(AudioQueueLevelMeterState);
@@ -201,7 +214,7 @@ static void AudioInputCallback(
 //ここからメソッド書き出しー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー▼▼　メソッド　▼▼
 
 //加速度計測- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -ボール挙動用メソッド
-//ーーーーーーーーーーーーーーーーーーーーー常に作動、同時にgetBoundも作動
+//ーーーーーーーーーーーーーーーーーーーーー常に作動、同時にgetBoundも作動 なんとsoundChangeの変数も更新
 - (void)setupAccelerometer{
     if (motionManager.accelerometerAvailable){
         // センサーの更新間隔の指定、２Hz
@@ -246,7 +259,7 @@ static void AudioInputCallback(
     if (nowAccel > 1.6 && nowAccel <= 1.9) {
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         
-         [[SEManager sharedManager] playSound:@"water_small.mp3"];
+         [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:0]];
         
         NSLog(@"弱：%ld", (long)soundMode);
         //-------------------------------------------------------------------
@@ -254,7 +267,7 @@ static void AudioInputCallback(
     if (nowAccel > 1.9 && nowAccel <= 2.2) {
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         
-        [[SEManager sharedManager] playSound:@"water_middle.mp3"];
+        [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:1]];
         
         NSLog(@"中：%ld", (long)soundMode);
         //-------------------------------------------------------------------
@@ -265,7 +278,7 @@ static void AudioInputCallback(
         //-------------------------------------------------------------------強バウンド　鳴らす音の設定
         if (volumeBig == 1) {
             
-        [[SEManager sharedManager] playSound:@"water_big.mp3"];
+        [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:2]];
         
         NSLog(@"強：%ld", (long)soundMode);
             
