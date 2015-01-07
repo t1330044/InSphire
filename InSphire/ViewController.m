@@ -13,9 +13,12 @@
 #import "TweetGet.h"   //ツイート関連のプロパティ生成
 
 @interface ViewController ()
-
 //インスタンス変数宣言ーーーーーーーーーーーーーー
 {
+
+    
+    __weak IBOutlet UITextView *tweetTextView;
+    
     //マイク用のキュー
     AudioQueueRef queue;
     
@@ -34,7 +37,6 @@
     //マイク音量でかいときのフラグ
     int volumeBig;
 }
-
 
 //音声　個別宣言ーーーーーーーーーーーーーーーーー過去の遺物　イラネ
 /*
@@ -66,7 +68,7 @@
     
     // Twitter関連の初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter　と　音声モード初期
     tweet = [[TweetGet alloc] init];
-    accountIndex = 0;
+    accountIndex = 3;
     soundMode = 20;
 //    [tweet getTimeLine:accountIndex];
     [self tweetRefresh];
@@ -78,14 +80,14 @@
     */
     
      // ホーム描画 初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -画面設定
-    CGRect rectHome1 = CGRectMake(10, 10, 500, 500);
+/*    CGRect rectHome1 = CGRectMake(10, 10, 500, 500);
     UIImageView *homeView = [[UIImageView alloc]initWithFrame:rectHome1];
     homeView.contentMode = UIViewContentModeCenter;
     // 画像の読み込み
     homeView.image = [UIImage imageNamed:@"ball_bg.png"];
     // UIImageViewのインスタンスをビューに追加
     [self.view addSubview:homeView];
-    
+*/
    
     // サーチボタン描画 初期設定
     //search
@@ -190,7 +192,7 @@ static void AudioInputCallback(
     [[NSRunLoop currentRunLoop] addTimer:timerMike forMode:NSDefaultRunLoopMode];
 }
 
-//マイク更新　タイマーで勝手に呼ばれるー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー volumeBigフラグ更新
+//マイク更新　タイマーで勝手に呼ばれるー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ー ラベル更新あり ー ー ー ー ー ー volumeBigフラグ更新
 - (void)updateVolume:(NSTimer *)timer {
     AudioQueueLevelMeterState levelMeter;
     UInt32 levelMeterSize = sizeof(AudioQueueLevelMeterState);
@@ -206,6 +208,7 @@ static void AudioInputCallback(
         NSLog(@"low");
         volumeBig = 0;
     }
+
 }
 
 
@@ -241,50 +244,68 @@ static void AudioInputCallback(
 
 //バウンド計算
 //ーーーーーーーーーーーーーーーーーーーーーバウンド監視して再生
+//音インデックス ０弱 １中 ２強
 - (void)getBownd{
+
+    //それぞれ前回との差を取って比較する
+    double x_gap1 = fabs(xac - xac_pre1);
+    double y_gap1 = fabs(yac - yac_pre1);
+    double z_gap1 = fabs(zac - zac_pre1);
+    double gap = x_gap1 + y_gap1 + z_gap1;
+    NSLog(@"----------------------加速度 瞬間差 : %f", gap);
     
-    int fil_pre = 0;
-    double nowAccel = 0;
+    if (gap > 1.8) {
+        //------------------------------------------------------------------- 弱 バウンド　鳴らす音の設定
+        if (volumeBig == 0) {
+            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:1]];
+        NSLog(@"バウンド((中))：%ld", (long)soundMode);
+        }else{
+            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:2]];
+        NSLog(@"バウンド(((強)))：%ld", (long)soundMode);
+        }
+
+//        NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
+        NSLog(@"ツイート内容：　%@", tweet.tweetText);
+    }
+
+
+    //単純に二乗平均
+    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
     
-    
-    nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
-    
-    
-    if (nowAccel < 1.6) {
-        fil_pre = 0;
+/*
+    if (nowAccel < 1.8) {
+        //------------------------------------------------------------------- 弱 バウンド　鳴らす音の設定
         NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
         NSLog(@"ツイート内容：　%@", tweet.tweetText);
     }
     
-    if (nowAccel > 1.6 && nowAccel <= 1.9) {
-        //-------------------------------------------------------------------強バウンド　鳴らす音の設定
+    if (nowAccel > 1.8 && nowAccel <= 2.4) {
+        //------------------------------------------------------------------- 中 バウンド　鳴らす音の設定
         
-         [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:0]];
-        
+        [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:0]];
         NSLog(@"弱：%ld", (long)soundMode);
         //-------------------------------------------------------------------
     }
-    if (nowAccel > 1.9 && nowAccel <= 2.2) {
-        //-------------------------------------------------------------------強バウンド　鳴らす音の設定
-        
-        [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:1]];
+    
+    if (nowAccel > 2.4) {
+        //------------------------------------------------------------------- 強 バウンド　鳴らす音の設定
+        if (volumeBig == 0) {
+             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:1]];
+        }else{
+             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:2]];
+        }
         
         NSLog(@"中：%ld", (long)soundMode);
         //-------------------------------------------------------------------
     }
+ */
+    
 
-    if (nowAccel > 2.2) {
-        
-        //-------------------------------------------------------------------強バウンド　鳴らす音の設定
-        if (volumeBig == 1) {
-            
-        [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:2]];
-        
-        NSLog(@"強：%ld", (long)soundMode);
-            
-        }
-        //-------------------------------------------------------------------
-    }
+    //過去の値を更新
+    xac_pre1 = xac;
+    yac_pre1 = yac;
+    zac_pre1 = zac;
+
 }
 - (void)getRolling{
 }
@@ -293,12 +314,15 @@ static void AudioInputCallback(
 // twitter更新- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
 - (void)tweetRefresh{
     [tweet getTimeLine:accountIndex];
+       [tweetTextView performSelectorOnMainThread:@selector(setText:) withObject:tweet.tweetText waitUntilDone:YES];
+
 //    [self soundChange:tweet.tweetText.length];
     NSLog(@"%@ : %@ : %lu", tweet.userName, tweet.tweetText, (unsigned long)tweet.tweetText.length);   //ログ出力
 }
 
 // 音声モード切り替え- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -音声切り替え
 - (int)soundChange:(NSUInteger)textNum{
+    
     if (textNum < 10) {
         return 0;
     }else if(textNum < 50){
