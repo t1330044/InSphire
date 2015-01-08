@@ -15,10 +15,6 @@
 @interface ViewController ()
 //インスタンス変数宣言ーーーーーーーーーーーーーー
 {
-
-    
-    __weak IBOutlet UITextView *tweetTextView;
-    
     //マイク用のキュー
     AudioQueueRef queue;
     
@@ -37,6 +33,9 @@
     //マイク音量でかいときのフラグ
     int volumeBig;
 }
+
+@property (weak, nonatomic) IBOutlet UITextView *tweetTextView;
+
 
 //音声　個別宣言ーーーーーーーーーーーーーーーーー過去の遺物　イラネ
 /*
@@ -138,10 +137,11 @@
 //音の配列作るメソッドーーーーーーーーーーーーーーーーーーー！！　ここで音の名前設定してね　！！
 - (void)soundSet{
     soundNames = [NSMutableArray arrayWithCapacity:5];
-    [soundNames addObject:@[@"water_small.wav", @"water_middle.wav", @"water_big.wav"]]; //water-0
-    [soundNames addObject:@[@"orgor_small.wav", @"orgor_middle.wav", @"orgor_big.wav"]]; //orgor-1
-    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2
-    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2
+    [soundNames addObject:@[@"water_small.wav", @"water_middle.wav", @"water_big.wav"]]; //water-0 ０：ノーマル
+    [soundNames addObject:@[@"orgor_small.wav", @"orgor_middle.wav", @"orgor_big.wav"]]; //orgor-1 １：ポジティブ
+    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2 ２：ネガティブ
+    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2 ３：静か
+    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2 ４：うるさい
 }
 
 
@@ -233,6 +233,10 @@ static void AudioInputCallback(
             [self getBownd];
             [self getRolling];
             soundMode = [self soundChange:tweet.tweetText.length];
+
+
+            self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
+            self.tweetTextView.font = [UIFont systemFontOfSize:14];
         };
         
         // 加速度の取得開始
@@ -256,11 +260,11 @@ static void AudioInputCallback(
     if (gap > 1.8) {
         //------------------------------------------------------------------- 弱 バウンド　鳴らす音の設定
         if (volumeBig == 0) {
-            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:1]];
-        NSLog(@"バウンド((中))：サウンドモード：%ld", (long)soundMode);
+            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:1]];
+        NSLog(@"バウンド((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
         }else{
-            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:2]];
-        NSLog(@"バウンド(((強)))：サウンドモード：%ld", (long)soundMode);
+            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
+        NSLog(@"バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
         }
 
 //        NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
@@ -269,7 +273,7 @@ static void AudioInputCallback(
 
 
     //単純に二乗平均
-    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
+//    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
     
 /*
     if (nowAccel < 1.8) {
@@ -313,10 +317,10 @@ static void AudioInputCallback(
 // twitter更新- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
 - (void)tweetRefresh{
     [tweet getTimeLine:accountIndex];
-    [tweetTextView performSelectorOnMainThread:@selector(setText:) withObject:tweet.tweetText waitUntilDone:YES];
 
+//    self.tweetTextView.text = tweet.tweetText;
 //    [self soundChange:tweet.tweetText.length];　アクセらさんにまかせました
-    NSLog(@"%@ : %@ : %lu", tweet.userName, tweet.tweetText, (unsigned long)tweet.tweetText.length);   //ログ出力
+//    NSLog(@"%@ : %@ : %lu", tweet.userName, tweet.tweetText, (unsigned long)tweet.tweetText.length);   //ログ出力　クラスになげました
 }
 
 // 音声モード切り替え- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -音声切り替え

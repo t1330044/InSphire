@@ -120,10 +120,67 @@
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://furyu.nazo.cc/twicon/%@/normal", _userName]];
     NSData *data = [NSData dataWithContentsOfURL:url];
     _userPic = [UIImage imageWithData:data];                           //ユーザーアイコン出力
-    _forSoundMode = 0;
+
+    NSLog(@"UserName:%@  %lu文字", _userName, (unsigned long)_tweetText.length);  //--------------------名前、文字数、テキスト、ログ出すよ
+    NSLog(@"ツイート：%@", _tweetText);
+
     
-    NSLog(@"%@, %lu", _tweetText, (unsigned long)_tweetText.length);
     
+    
+//ここからツイート仕分け用
+    int pointNega = 0;
+    int pointPosi = 0;
+    
+    NSString *text = _tweetText;
+    NSMutableArray *wordsPositive = [NSMutableArray arrayWithObjects:
+                                     @"嬉し", @"喜ん", @"楽し", @"がんば", @"ワクワク",
+                                     @"美味し", @"おめでと", @"ありがと", @"スッキリ", @"よろしく", nil];  //----------使う単語
+    NSMutableArray *wordsNegative = [NSMutableArray arrayWithObjects:
+                                     @"嫌", @"つら", @"怖", @"痛い", @"悲し",
+                                     @"最悪", @"無理", @"酷", @"うざ", @"イライラ", nil];
+    
+    _forSoundMode = 0;  //モード初期値は0;
+    
+    for (int i = 0; i < 10; i++) {
+        NSRange searchResult = [text rangeOfString:[wordsPositive objectAtIndex:i]];
+        if(searchResult.location == NSNotFound){
+        }else{
+            // みつかった場合の処理
+            NSLog(@"・「%@」がありました", [wordsPositive objectAtIndex:i]);
+            pointPosi ++;
+        }
+    }
+    for (int j = 0; j < 10; j++) {
+        NSRange searchResult = [text rangeOfString:[wordsNegative objectAtIndex:j]];
+        if(searchResult.location == NSNotFound){
+        }else{
+            // みつかった場合の処理
+            NSLog(@"・「%@」がありました", [wordsNegative objectAtIndex:j]);
+            pointNega ++;
+        }
+    }
+    NSLog(@"　ポジ指数 %d　ネガ指数 %d", pointPosi, pointNega);
+    
+    if (pointPosi > pointNega) {
+        NSLog(@"　このツイートはポジティブです！！！");
+        _forSoundMode = 1;
+    }
+    if (pointPosi < pointNega) {
+        NSLog(@"　このツイートはネガティブです・・・");
+        _forSoundMode = 2;
+    }
+    if (_tweetText.length < 15) {
+        NSLog(@"　でも文字数少ないのでおとなしいモードにしますね・・・・・・");
+        _forSoundMode = 3;
+    }
+    NSRange searchResult = [text rangeOfString:@"！！！"];
+    if (searchResult.location == NSNotFound) {
+    }else{
+        NSLog(@"　・・・・・と思ったが、やっぱちげーわ　このツイートうるせえ！");
+        _forSoundMode = 4;
+    }
+    
+    NSLog(@"サウンドモード用識別：%ld", (long)_forSoundMode);
 }
 
 

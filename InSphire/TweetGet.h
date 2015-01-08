@@ -18,7 +18,7 @@
 @property NSString *tweetText;    //ツイート文の抽出
 @property NSString *userName;     //ユーザー名の出力
 @property UIImage *userPic;       //ユーザーのアイコン出力
-@property NSInteger forSoundMode; //０ポジ・１ネガ・２ビックリの３種類
+@property NSInteger forSoundMode; //０ポジ・１ネガ・２おとなしい・３ビックリ の４種類
 
 - (void)getTimeLine:(NSInteger)accountIndex;
 
