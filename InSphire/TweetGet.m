@@ -120,10 +120,15 @@
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://furyu.nazo.cc/twicon/%@/normal", _userName]];
     NSData *data = [NSData dataWithContentsOfURL:url];
     _userPic = [UIImage imageWithData:data];                           //ユーザーアイコン出力
+    _forSoundMode = 0;
     
-//    NSLog(@"%ld / %ld", (long)accountIndex + 1, (long)accountNum);
-//    NSLog(@"%@, %lu", _tweetText, (unsigned long)_tweetText.length);
+    NSLog(@"%@, %lu", _tweetText, (unsigned long)_tweetText.length);
+    
 }
+
+
+
+
 
 
 

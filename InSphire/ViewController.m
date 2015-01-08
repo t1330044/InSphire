@@ -70,7 +70,6 @@
     tweet = [[TweetGet alloc] init];
     accountIndex = 3;
     soundMode = 20;
-//    [tweet getTimeLine:accountIndex];
     [self tweetRefresh];
     
     /* 音声　読み込み- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -過去の遺物　イラネ
@@ -198,14 +197,14 @@ static void AudioInputCallback(
     UInt32 levelMeterSize = sizeof(AudioQueueLevelMeterState);
     AudioQueueGetProperty(queue,kAudioQueueProperty_CurrentLevelMeterDB,&levelMeter,&levelMeterSize);
     
-    NSLog(@"mPeakPower=%0.9f", levelMeter.mPeakPower);
+    NSLog(@"----------------------音量：%0.6f", levelMeter.mPeakPower);
     //   NSLog(@"mAveragePower=%0.9f", levelMeter.mAveragePower);
     
     if (levelMeter.mPeakPower >= -1.4f) {
-        NSLog(@"hi!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        NSLog(@"：：：：： hi ：：：：：");
         volumeBig = 1;
     }else{
-        NSLog(@"low");
+//        NSLog(@"low");
         volumeBig = 0;
     }
 
@@ -258,14 +257,14 @@ static void AudioInputCallback(
         //------------------------------------------------------------------- 弱 バウンド　鳴らす音の設定
         if (volumeBig == 0) {
             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:1]];
-        NSLog(@"バウンド((中))：%ld", (long)soundMode);
+        NSLog(@"バウンド((中))：サウンドモード：%ld", (long)soundMode);
         }else{
             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:2]];
-        NSLog(@"バウンド(((強)))：%ld", (long)soundMode);
+        NSLog(@"バウンド(((強)))：サウンドモード：%ld", (long)soundMode);
         }
 
 //        NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
-        NSLog(@"ツイート内容：　%@", tweet.tweetText);
+//        NSLog(@"ツイート内容：　%@", tweet.tweetText);
     }
 
 
@@ -314,9 +313,9 @@ static void AudioInputCallback(
 // twitter更新- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
 - (void)tweetRefresh{
     [tweet getTimeLine:accountIndex];
-       [tweetTextView performSelectorOnMainThread:@selector(setText:) withObject:tweet.tweetText waitUntilDone:YES];
+    [tweetTextView performSelectorOnMainThread:@selector(setText:) withObject:tweet.tweetText waitUntilDone:YES];
 
-//    [self soundChange:tweet.tweetText.length];
+//    [self soundChange:tweet.tweetText.length];　アクセらさんにまかせました
     NSLog(@"%@ : %@ : %lu", tweet.userName, tweet.tweetText, (unsigned long)tweet.tweetText.length);   //ログ出力
 }
 
