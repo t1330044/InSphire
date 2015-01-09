@@ -32,6 +32,9 @@
 
     //マイク音量でかいときのフラグ
     int volumeBig;
+    
+    //連続再生回避用フラグ
+    int soundFlag;
 }
 
 @property (weak, nonatomic) IBOutlet UITextView *tweetTextView;
@@ -78,6 +81,7 @@
     */
     
      // ホーム描画 初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -画面設定
+    
 /*    CGRect rectHome1 = CGRectMake(10, 10, 500, 500);
     UIImageView *homeView = [[UIImageView alloc]initWithFrame:rectHome1];
     homeView.contentMode = UIViewContentModeCenter;
@@ -97,25 +101,7 @@
     [self.view addSubview:search];
 //    [search addTarget:self action:@selector(showBrowser) forControlEvents:UIControlEventTouchUpInside];
     
-    // twitterボタン描画 初期設定
-    /*
-     UIButton *twitter = [UIButton buttonWithType:UIButtonTypeSystem];
-     [twitter setImage:[UIImage imageNamed:@"twi_tori.png"]
-     forState:UIControlStateNormal];
-     [twitter sizeToFit];
-     twitter.center = CGPointMake(40, self.view.frame.size.height - 40);
-     [self.view addSubview:twitter];
      
-     [twitter addTarget:self action:@selector(showBrowser) forControlEvents:UIControlEventTouchUpInside];
-     */
-/*
-    [NSTimer scheduledTimerWithTimeInterval:61.0     // 勝手に動くので、unusedエラーは気にしない。と思ったらエラーなくなった。
-                                                             target:self
-                                                           selector:@selector(tweetRefresh)
-                                                           userInfo:nil
-                                                            repeats:YES];
- */
-    
     //ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー再生とマイクの競合を解除、スピーカー使用に設定！！
     AVAudioSession *audiosession = [AVAudioSession sharedInstance];
 //    NSString *const AVAudioSessionCategoryPlayAndRecord;
@@ -124,6 +110,7 @@
                         error:nil];
     [audiosession setActive:YES error:nil];
     
+    soundFlag = 0;
     [self setupAccelerometer];  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度計測開始！！　初期設定以上！！
     
     //マイクの取得開始
@@ -235,8 +222,9 @@ static void AudioInputCallback(
             soundMode = [self soundChange:tweet.tweetText.length];
 
 
-            self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
-            self.tweetTextView.font = [UIFont systemFontOfSize:14];
+  //          self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
+  //          self.tweetTextView.font = [UIFont systemFontOfSize:16];
+            
         };
         
         // 加速度の取得開始
@@ -245,10 +233,15 @@ static void AudioInputCallback(
 }
 
 
+
 //バウンド計算
 //ーーーーーーーーーーーーーーーーーーーーーバウンド監視して再生
 //音インデックス ０弱 １中 ２強
+//０デフォ・１ポジ・２ネガ・３おとなしい・４うるせえ！ の５種類
+//[[SEManager sharedManager] playSound:[[soundNames objectAtIndex: ( tweet.forSoundMode：自動 ) ] objectAtIndex:（ 0 1 2 強弱選択いじるのここ）]];
+
 - (void)getBownd{
+
 
     //それぞれ前回との差を取って比較する
     double x_gap1 = fabs(xac - xac_pre1);
@@ -257,16 +250,24 @@ static void AudioInputCallback(
     double gap = x_gap1 + y_gap1 + z_gap1;
     NSLog(@"----------------------加速度 瞬間差 : %f", gap);
     
-    if (gap > 1.8) {
+    if (gap < 1.8) {
+        soundFlag = 0;
+        NSLog(@"%d", soundFlag);
+    }
+    
+    if (gap > 1.8 && soundFlag == 0) {
         //------------------------------------------------------------------- 弱 バウンド　鳴らす音の設定
         if (volumeBig == 0) {
             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:1]];
-        NSLog(@"バウンド((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            NSLog(@"バウンド((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            NSLog(@"%d", soundFlag);
         }else{
             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
-        NSLog(@"バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            NSLog(@"バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            NSLog(@"%d", soundFlag);
         }
-
+        
+        soundFlag = 1;
 //        NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
 //        NSLog(@"ツイート内容：　%@", tweet.tweetText);
     }
@@ -274,34 +275,6 @@ static void AudioInputCallback(
 
     //単純に二乗平均
 //    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
-    
-/*
-    if (nowAccel < 1.8) {
-        //------------------------------------------------------------------- 弱 バウンド　鳴らす音の設定
-        NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
-        NSLog(@"ツイート内容：　%@", tweet.tweetText);
-    }
-    
-    if (nowAccel > 1.8 && nowAccel <= 2.4) {
-        //------------------------------------------------------------------- 中 バウンド　鳴らす音の設定
-        
-        [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:0]];
-        NSLog(@"弱：%ld", (long)soundMode);
-        //-------------------------------------------------------------------
-    }
-    
-    if (nowAccel > 2.4) {
-        //------------------------------------------------------------------- 強 バウンド　鳴らす音の設定
-        if (volumeBig == 0) {
-             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:1]];
-        }else{
-             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:soundMode] objectAtIndex:2]];
-        }
-        
-        NSLog(@"中：%ld", (long)soundMode);
-        //-------------------------------------------------------------------
-    }
- */
     
 
     //過去の値を更新
@@ -317,10 +290,10 @@ static void AudioInputCallback(
 // twitter更新- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
 - (void)tweetRefresh{
     [tweet getTimeLine:accountIndex];
+    [NSThread sleepForTimeInterval:1.5];//読み込み待ち２秒
+    self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
+    self.tweetTextView.font = [UIFont systemFontOfSize:16];
 
-//    self.tweetTextView.text = tweet.tweetText;
-//    [self soundChange:tweet.tweetText.length];　アクセらさんにまかせました
-//    NSLog(@"%@ : %@ : %lu", tweet.userName, tweet.tweetText, (unsigned long)tweet.tweetText.length);   //ログ出力　クラスになげました
 }
 
 // 音声モード切り替え- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -音声切り替え

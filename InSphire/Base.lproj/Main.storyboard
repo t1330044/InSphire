@@ -17,10 +17,10 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="ball_bg600" translatesAutoresizingMaskIntoConstraints="NO" id="dXI-a6-8Ar">
-                                <rect key="frame" x="-36" y="0.0" width="447" height="456"/>
+                                <rect key="frame" x="-36" y="72" width="447" height="456"/>
                             </imageView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" editable="NO" text="Tweet" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kLh-76-3Da">
-                                <rect key="frame" x="67" y="148" width="240" height="160"/>
+                                <rect key="frame" x="67" y="199" width="240" height="202"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="25"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
