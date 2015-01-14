@@ -124,11 +124,16 @@
 //音の配列作るメソッドーーーーーーーーーーーーーーーーーーー！！　ここで音の名前設定してね　！！
 - (void)soundSet{
     soundNames = [NSMutableArray arrayWithCapacity:5];
-    [soundNames addObject:@[@"water_small.wav", @"water_middle.wav", @"water_big.wav"]]; //water-0 ０：ノーマル
-    [soundNames addObject:@[@"orgor_small.wav", @"orgor_middle.wav", @"orgor_big.wav"]]; //orgor-1 １：ポジティブ
-    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2 ２：ネガティブ
-    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2 ３：静か
-    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];               //piamo-2 ４：うるさい
+//piano ０：ノーマル
+    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];
+//posi  １：ポジティブ
+    [soundNames addObject:@[@"posi_piano0.wav", @"posi_piano1.wav", @"posi_piano2.wav"]];
+//nega  ２：ネガティブ
+    [soundNames addObject:@[@"nega_piano1.wav", @"nega_piano2.wav", @"Nega_gaaan.wav"]];
+//water ３：静か
+    [soundNames addObject:@[@"water_small.wav", @"water_middle.wav", @"water_big.wav"]];
+//piamo-2 ４：うるさい
+    [soundNames addObject:@[@"xp_teren.wav", @"xp_den.wav", @"xp_dede-n.wav"]];
 }
 
 
@@ -219,9 +224,8 @@ static void AudioInputCallback(
             
             [self getBownd];
             [self getRolling];
-            soundMode = [self soundChange:tweet.tweetText.length];
 
-
+//            soundMode = [self soundChange:tweet.tweetText.length]; サウンドモードチェンジ
   //          self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
   //          self.tweetTextView.font = [UIFont systemFontOfSize:16];
             
@@ -237,7 +241,13 @@ static void AudioInputCallback(
 //バウンド計算
 //ーーーーーーーーーーーーーーーーーーーーーバウンド監視して再生
 //音インデックス ０弱 １中 ２強
-//０デフォ・１ポジ・２ネガ・３おとなしい・４うるせえ！ の５種類
+
+//０デフォ(piano)
+//１ポジ(piano_posi)
+//２ネガ(piano_nega)
+//３おとなしい(water)
+//４うるせえ！ の５種類
+
 //[[SEManager sharedManager] playSound:[[soundNames objectAtIndex: ( tweet.forSoundMode：自動 ) ] objectAtIndex:（ 0 1 2 強弱選択いじるのここ）]];
 
 - (void)getBownd{
@@ -248,7 +258,10 @@ static void AudioInputCallback(
     double y_gap1 = fabs(yac - yac_pre1);
     double z_gap1 = fabs(zac - zac_pre1);
     double gap = x_gap1 + y_gap1 + z_gap1;
-    NSLog(@"----------------------加速度 瞬間差 : %f", gap);
+    NSLog(@"-------------------加速度 瞬間差 : %f", gap);
+    //単純に二乗平均
+    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
+    NSLog(@"----------------------２乗平均値 : %f", nowAccel);
     
     if (gap < 1.8) {
         soundFlag = 0;
@@ -266,15 +279,12 @@ static void AudioInputCallback(
             NSLog(@"バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
             NSLog(@"%d", soundFlag);
         }
-        
         soundFlag = 1;
-//        NSLog(@"- -soundMode: %ld - -volumeBig: %d", (long)soundMode, volumeBig);
-//        NSLog(@"ツイート内容：　%@", tweet.tweetText);
+        NSLog(@"soundFlag:%d change!", soundFlag);
     }
 
 
-    //単純に二乗平均
-//    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
+
     
 
     //過去の値を更新
@@ -290,7 +300,7 @@ static void AudioInputCallback(
 // twitter更新- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
 - (void)tweetRefresh{
     [tweet getTimeLine:accountIndex];
-    [NSThread sleepForTimeInterval:1.5];//読み込み待ち２秒
+    [NSThread sleepForTimeInterval:2.5];//読み込み待ち２秒
     self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
     self.tweetTextView.font = [UIFont systemFontOfSize:16];
 
