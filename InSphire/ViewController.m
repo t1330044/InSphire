@@ -33,8 +33,9 @@
     //マイク音量でかいときのフラグ
     int volumeBig;
     
-    //連続再生回避用フラグ
-    int soundFlag;
+    //各種フラグ
+    int soundFlag;   //連続再生阻止　バウンドで１化、静止で０＝鳴らしていい
+    int natureFallinFlag;  //自然落下状態検出　常に０、　無重力でカウントアップ＝５回で自然バウンド、キャッチ検出に使用
 }
 
 @property (weak, nonatomic) IBOutlet UITextView *tweetTextView;
@@ -111,6 +112,7 @@
     [audiosession setActive:YES error:nil];
     
     soundFlag = 0;
+    natureFallinFlag = 0;                                    //- - - - - - - - - - - - - - - - - - -フラグの初期化
     [self setupAccelerometer];  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度計測開始！！　初期設定以上！！
     
     //マイクの取得開始
@@ -263,30 +265,62 @@ static void AudioInputCallback(
     double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
     NSLog(@"----------------------２乗平均値 : %f", nowAccel);
     
-    if (gap < 1.8) {
+//    NSLog(@"X = %f", xac);
+//    NSLog(@"Y = %f", yac);
+//    NSLog(@"Z = %f", zac);
+    
+    
+    if(nowAccel < 0.15) {//------------------------------------------------------------------- 無重力を検出
+        natureFallinFlag ++;
+        NSLog(@"%d", natureFallinFlag);
+    }
+    
+    if (gap < 1.8) {//------------------------------------------------------------------------ 静止に近いなら、連続再生防止フラグリセット
         soundFlag = 0;
         NSLog(@"%d", soundFlag);
     }
     
-    if (gap > 1.8 && soundFlag == 0) {
-        //------------------------------------------------------------------- 弱 バウンド　鳴らす音の設定
+    
+//無重力から、キャッチとバウンドを検出
+    if (natureFallinFlag > 4) {
+        if (gap > 2) {
+            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
+            NSLog(@"　Σ　キャッチ！！");
+            natureFallinFlag = 0;
+        }
+    }else{
+        if (volumeBig == 0) {
+            if (nowAccel > 2.0) {
+                NSLog(@"--------------------------バウンド ((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            }
+        }else{
+            if (nowAccel > 2.0) {
+                NSLog(@"--------------------------バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            }
+        }
+    }
+    
+
+/*
+    if (gap > 1.8 && soundFlag == 0 && natureFallinFlag < 5) {
+        //------------------------------------------------------------------- バウンド　鳴らす音の設定
         if (volumeBig == 0) {
             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:1]];
-            NSLog(@"バウンド((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            NSLog(@"--------------------------バウンド((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
             NSLog(@"%d", soundFlag);
         }else{
             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
-            NSLog(@"バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
+            NSLog(@"--------------------------バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
             NSLog(@"%d", soundFlag);
         }
         soundFlag = 1;
-        NSLog(@"soundFlag:%d change!", soundFlag);
+//        NSLog(@"soundFlag:%d change!", soundFlag);
     }
-
-
-
+*/
     
-
+    
+    
+    
     //過去の値を更新
     xac_pre1 = xac;
     yac_pre1 = yac;
