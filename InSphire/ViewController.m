@@ -91,7 +91,8 @@
     // UIImageViewのインスタンスをビューに追加
     [self.view addSubview:homeView];
 */
-   
+
+    /*
     // サーチボタン描画 初期設定
     //search
     UIButton *search = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -101,6 +102,7 @@
     search.center = CGPointMake(self.view.frame.size.width - 40, self.view.frame.size.height - 40);
     [self.view addSubview:search];
 //    [search addTarget:self action:@selector(showBrowser) forControlEvents:UIControlEventTouchUpInside];
+     */
     
      
     //ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー再生とマイクの競合を解除、スピーカー使用に設定！！
@@ -177,7 +179,7 @@ static void AudioInputCallback(
                                              repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:timerTwitter forMode:NSDefaultRunLoopMode];
     
-    NSTimer *timerMike = [NSTimer timerWithTimeInterval:0.2
+    NSTimer *timerMike = [NSTimer timerWithTimeInterval:0.1
                                               target:self
                                             selector:@selector(updateVolume:)
                                             userInfo:nil
@@ -191,11 +193,11 @@ static void AudioInputCallback(
     UInt32 levelMeterSize = sizeof(AudioQueueLevelMeterState);
     AudioQueueGetProperty(queue,kAudioQueueProperty_CurrentLevelMeterDB,&levelMeter,&levelMeterSize);
     
-    NSLog(@"----------------------音量：%0.6f", levelMeter.mPeakPower);
+//    NSLog(@"----------------------音量：%0.6f", levelMeter.mPeakPower);
     //   NSLog(@"mAveragePower=%0.9f", levelMeter.mAveragePower);
     
     if (levelMeter.mPeakPower >= -1.4f) {
-        NSLog(@"：：：：： hi ：：：：：");
+//        NSLog(@"：：：：： hi ：：：：：");
         volumeBig = 1;
     }else{
 //        NSLog(@"low");
@@ -254,69 +256,93 @@ static void AudioInputCallback(
 
 - (void)getBownd{
 
-
+    NSLog(@"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
     //それぞれ前回との差を取って比較する
-    double x_gap1 = fabs(xac - xac_pre1);
-    double y_gap1 = fabs(yac - yac_pre1);
-    double z_gap1 = fabs(zac - zac_pre1);
-    double gap = x_gap1 + y_gap1 + z_gap1;
-    NSLog(@"-------------------加速度 瞬間差 : %f", gap);
-    //単純に二乗平均
-    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);
-    NSLog(@"----------------------２乗平均値 : %f", nowAccel);
-    
+//    double x_gap1 = fabs(xac - xac_pre1);
+//    double y_gap1 = fabs(yac - yac_pre1);
+//    double z_gap1 = fabs(zac - zac_pre1);
+//    double gap = x_gap1 + y_gap1 + z_gap1;
 //    NSLog(@"X = %f", xac);
 //    NSLog(@"Y = %f", yac);
 //    NSLog(@"Z = %f", zac);
-    
-    
-    if(nowAccel < 0.15) {//------------------------------------------------------------------- 無重力を検出
-        natureFallinFlag ++;
-        NSLog(@"%d", natureFallinFlag);
-    }
-    
-    if (gap < 1.8) {//------------------------------------------------------------------------ 静止に近いなら、連続再生防止フラグリセット
+//    NSLog(@"-------------------加速度 瞬間差 : %f", gap);
+    double nowAccel = sqrt(xac*xac + yac*yac + zac*zac);    NSLog(@"----------------------２乗平均値 : %f", nowAccel);
+
+
+
+//フラグ処理
+    if (nowAccel < 1.9) {//------------------------------------------------------------------------ 静止に近いなら、連続再生防止フラグリセット
         soundFlag = 0;
-        NSLog(@"%d", soundFlag);
     }
     
     
-//無重力から、キャッチとバウンドを検出
-    if (natureFallinFlag > 4) {
-        if (gap > 2) {
+
+    if (natureFallinFlag > 2) {//無重力から、キャッチとバウンドを検出
+        
+        if (nowAccel < 0.5) {//無重力
+            NSLog(@"　滞 空 中 ）））");
+            NSLog(@"No grabity times:%d", natureFallinFlag);
+            natureFallinFlag ++;
+        }
+        
+        if (nowAccel >= 0.5 && nowAccel < 2.1 && soundFlag == 0) {//バウンド
+            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:1]];
+            NSLog(@"　Σ　バウンド！！");
+            natureFallinFlag = 0;
+            soundFlag = 1;
+        }
+        
+        if (nowAccel >= 2.1 && soundFlag == 0) {//キャッチ
             [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
             NSLog(@"　Σ　キャッチ！！");
             natureFallinFlag = 0;
+            soundFlag = 1;
         }
+        
     }else{
-        if (volumeBig == 0) {
-            if (nowAccel > 2.0) {
-                NSLog(@"--------------------------バウンド ((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
-            }
-        }else{
-            if (nowAccel > 2.0) {
-                NSLog(@"--------------------------バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
-            }
+        
+        if (nowAccel < 0.5) {//無重力
+            NSLog(@"　滞 空 中 ）））");
+            NSLog(@"No grabity times:%d", natureFallinFlag);
+            natureFallinFlag ++;
         }
+        
+        if (nowAccel >= 0.5 && nowAccel < 1.9 && soundFlag == 0) {//無重力
+            NSLog(@"　ー ー ー ー ー");
+            natureFallinFlag = 0;
+        }
+        
+        if (nowAccel >= 1.9 && soundFlag == 0) {//無重力
+            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:0]];
+            NSLog(@"　Σ　投げた！！");
+            natureFallinFlag = 0;
+            soundFlag = 1;
+        }
+
+        
     }
     
 
 /*
-    if (gap > 1.8 && soundFlag == 0 && natureFallinFlag < 5) {
-        //------------------------------------------------------------------- バウンド　鳴らす音の設定
-        if (volumeBig == 0) {
-            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:1]];
-            NSLog(@"--------------------------バウンド((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
-            NSLog(@"%d", soundFlag);
-        }else{
-            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
-            NSLog(@"--------------------------バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
-            NSLog(@"%d", soundFlag);
-        }
-        soundFlag = 1;
-//        NSLog(@"soundFlag:%d change!", soundFlag);
-    }
-*/
+ 
+ 
+ if (volumeBig == 0) {
+ if (nowAccel > 2.0) {
+ natureFallinFlag = 0;
+ NSLog(@"--------------------------バウンド ((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
+ //                [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
+ }
+ }else{
+ if (nowAccel > 2.0) {
+ natureFallinFlag = 0;
+ NSLog(@"--------------------------バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
+ //                [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
+ }
+ }
+ ここまできりとって
+ 
+ 
+ */
     
     
     
