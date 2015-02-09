@@ -133,15 +133,15 @@
     
     NSString *text = _tweetText;
     NSMutableArray *wordsPositive = [NSMutableArray arrayWithObjects:
-                                     @"嬉し", @"喜ん", @"楽し", @"がんば", @"ワクワク",
-                                     @"美味し", @"おめでと", @"ありがと", @"スッキリ", @"よろしく", nil];  //----------使う単語
+                                     @"嬉し", @"楽し", @"美味し", @"好き", @"最高", @"喜んで",
+                                     @"お疲れ様", @"ありがと", @"おめでと", @"よろしく", @"宜しく", nil];  //----------使う単語
     NSMutableArray *wordsNegative = [NSMutableArray arrayWithObjects:
-                                     @"嫌", @"つら", @"怖", @"痛い", @"悲し",
-                                     @"最悪", @"無理", @"酷", @"疲れ", @"イライラ", nil];
+                                     @"悲し", @"つら", @"怖い", @"痛い", @"悪い", @"嫌",
+                                     @"最悪", @"無理", @"酷い", @"ひどい", @"イライラ", nil];
     
     _forSoundMode = 0;  //モード初期値は0;
     
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 11; i++) {
         NSRange searchResult = [text rangeOfString:[wordsPositive objectAtIndex:i]];
         if(searchResult.location == NSNotFound){
         }else{
@@ -150,7 +150,7 @@
             pointPosi ++;
         }
     }
-    for (int j = 0; j < 10; j++) {
+    for (int j = 0; j < 11; j++) {
         NSRange searchResult = [text rangeOfString:[wordsNegative objectAtIndex:j]];
         if(searchResult.location == NSNotFound){
         }else{

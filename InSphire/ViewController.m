@@ -21,7 +21,7 @@
     //ツイート管理用の親元クラス
     TweetGet *tweet;
     NSInteger accountIndex;  // クラスでアカウント指定するための引数　これ変更すれば他のアカウントに設定できる　　　★ここ未実装！！
-    NSInteger soundMode;     // どの音声を鳴らすかグループを選択
+//    NSInteger soundMode;     // どの音声を鳴らすかグループを選択
     NSMutableArray *soundNames; //使うサウンド名を収録
     
     //加速度ハンドラ
@@ -36,9 +36,12 @@
     //各種フラグ
     int soundFlag;   //連続再生阻止　バウンドで１化、静止で０＝鳴らしていい
     int natureFallinFlag;  //自然落下状態検出　常に０、　無重力でカウントアップ＝５回で自然バウンド、キャッチ検出に使用
+    
 }
 
 @property (weak, nonatomic) IBOutlet UITextView *tweetTextView;
+@property (weak, nonatomic) IBOutlet UILabel *userNameLabel;
+@property (weak, nonatomic) IBOutlet UILabel *soundModeLabel;
 
 
 //音声　個別宣言ーーーーーーーーーーーーーーーーー過去の遺物　イラネ
@@ -61,7 +64,7 @@
     
     //音の配列を作る
     [self soundSet];
-    NSLog(@"%@", [[soundNames objectAtIndex:0] objectAtIndex:0]);//確認
+    NSLog(@"%@を先頭に音配列生成", [[soundNames objectAtIndex:0] objectAtIndex:0]);//確認
     
     // 加速度CoreMotionマネージャ作る- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -加速度
     if (! motionManager) {
@@ -72,7 +75,7 @@
     // Twitter関連の初期設定- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter　と　音声モード初期
     tweet = [[TweetGet alloc] init];
     accountIndex = 3;
-    soundMode = 20;
+//    soundMode = 20;
     [self tweetRefresh];
     
     /* 音声　読み込み- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -過去の遺物　イラネ
@@ -129,7 +132,7 @@
 - (void)soundSet{
     soundNames = [NSMutableArray arrayWithCapacity:5];
 //piano ０：ノーマル
-    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];
+    [soundNames addObject:@[@"pianoC.wav", @"pianoE.wav", @"pianoG.wav"]];//いれとくけど使わない！
 //posi  １：ポジティブ
     [soundNames addObject:@[@"posi_piano0.wav", @"posi_piano1.wav", @"posi_piano2.wav"]];
 //nega  ２：ネガティブ
@@ -227,7 +230,6 @@ static void AudioInputCallback(
             zac = data.acceleration.z;
             
             [self getBownd];
-            [self getRolling];
 
 //            soundMode = [self soundChange:tweet.tweetText.length]; サウンドモードチェンジ
   //          self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
@@ -244,7 +246,7 @@ static void AudioInputCallback(
 
 //バウンド計算
 //ーーーーーーーーーーーーーーーーーーーーーバウンド監視して再生
-//音インデックス ０弱 １中 ２強
+//音インデックス ０投げ １バウンド ２キャッチ
 
 //０デフォ(piano)
 //１ポジ(piano_posi)
@@ -276,109 +278,146 @@ static void AudioInputCallback(
     }
     
     
+    
 
-    if (natureFallinFlag > 2) {//無重力から、キャッチとバウンドを検出
-        
-        if (nowAccel < 0.5) {//無重力
+    if (natureFallinFlag > 2) {                    // - - - - - - - 無重力から、キャッチとバウンドを検出 - - - - - - - - - -
+
+//無重力ーーーーーーーー▼
+        if (nowAccel < 0.5) {
             NSLog(@"　滞 空 中 ）））");
             NSLog(@"No grabity times:%d", natureFallinFlag);
             natureFallinFlag ++;
         }
         
-        if (nowAccel >= 0.5 && nowAccel < 2.1 && soundFlag == 0) {//バウンド
-            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:1]];
+//バウンドーーーーーーーー▼
+        if (nowAccel >= 0.5 && nowAccel < 2.1 && soundFlag == 0) {
             NSLog(@"　Σ　バウンド！！");
+            if (tweet.forSoundMode == 0) {
+                [[SEManager sharedManager] playSound:[self printnum]];
+                NSLog(@"ニュートラルモードで音鳴らすよ！：ランダム生成 %@", [self printnum]);
+            }else{
+                [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:1]];
+                NSLog(@"ポジネガ静賑モードで音鳴らすよ！");
+            }
             natureFallinFlag = 0;
             soundFlag = 1;
         }
         
-        if (nowAccel >= 2.1 && soundFlag == 0) {//キャッチ
-            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
+//キャッチーーーーーーーー▼
+        if (nowAccel >= 2.1 && soundFlag == 0) {
+            if (tweet.forSoundMode == 0) {
+                [[SEManager sharedManager] playSound:[self printnum]];
+                NSLog(@"ニュートラルモードで音鳴らすよ！：ランダム生成 %@", [self printnum]);
+            }else{
+                [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
+                NSLog(@"ポジネガ静賑モードで音鳴らすよ！");
+            }
             NSLog(@"　Σ　キャッチ！！");
             natureFallinFlag = 0;
             soundFlag = 1;
         }
         
     }else{
-        
-        if (nowAccel < 0.5) {//無重力
+//無重力ーーーーーーーー▼
+        if (nowAccel < 0.5) {
             NSLog(@"　滞 空 中 ）））");
             NSLog(@"No grabity times:%d", natureFallinFlag);
+            if (natureFallinFlag == 1) {
+                [[SEManager sharedManager] playSound:@"hyun.wav"];
+            }
             natureFallinFlag ++;
         }
         
-        if (nowAccel >= 0.5 && nowAccel < 1.9 && soundFlag == 0) {//無重力
+//なんでもねえーーーーーーーー▼
+        if (nowAccel >= 0.5 && nowAccel < 1.9 && soundFlag == 0) {
             NSLog(@"　ー ー ー ー ー");
             natureFallinFlag = 0;
         }
-        
-        if (nowAccel >= 1.9 && soundFlag == 0) {//無重力
-            [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:0]];
+
+//投げた！ーーーーーーーー▼
+        if (nowAccel >= 1.9 && soundFlag == 0) {
             NSLog(@"　Σ　投げた！！");
+            if (tweet.forSoundMode == 0) {
+                [[SEManager sharedManager] playSound:[self printnum]];
+                NSLog(@"ニュートラルモードで音鳴らすよ！：ランダム生成 %@", [self printnum]);
+            }else{
+                [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:0]];
+                NSLog(@"ポジネガ静賑モードで音鳴らすよ！");
+            }
             natureFallinFlag = 0;
             soundFlag = 1;
         }
-
         
     }
-    
-
-/*
- 
- 
- if (volumeBig == 0) {
- if (nowAccel > 2.0) {
- natureFallinFlag = 0;
- NSLog(@"--------------------------バウンド ((中))：サウンドモード：%ld", (long)tweet.forSoundMode);
- //                [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
- }
- }else{
- if (nowAccel > 2.0) {
- natureFallinFlag = 0;
- NSLog(@"--------------------------バウンド(((強)))：サウンドモード：%ld", (long)tweet.forSoundMode);
- //                [[SEManager sharedManager] playSound:[[soundNames objectAtIndex:tweet.forSoundMode] objectAtIndex:2]];
- }
- }
- ここまできりとって
- 
- 
- */
-    
-    
-    
-    
     //過去の値を更新
     xac_pre1 = xac;
     yac_pre1 = yac;
     zac_pre1 = zac;
 
 }
-- (void)getRolling{
+
+
+
+// ランダムでニュートラルピアノ- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- (NSString *)printnum{
+    int random_number = arc4random() % 13;//0～12の数値をランダムに取得
+    NSString *piano_randum = [[NSString alloc]initWithFormat:@"piano%d.wav", random_number];
+    return piano_randum;
 }
+
+// 音声モード記述切り替え- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -ラベル用
+- (NSString *)change:(NSInteger)soundModeNum{
+    NSString *soundModeName;
+    switch (soundModeNum) {
+        case 0:
+        {
+            soundModeName = [[NSString alloc]initWithFormat:@"NEUTRAL"];
+            break;
+        }
+        case 1:
+        {
+            soundModeName = [[NSString alloc]initWithFormat:@"POSITIVE"];
+            break;
+        }
+        case 2:
+        {
+            soundModeName = [[NSString alloc]initWithFormat:@"NEGATIVE"];
+            break;
+        }
+        case 3:
+        {
+            soundModeName = [[NSString alloc]initWithFormat:@"CALM..."];
+            break;
+        }
+        case 4:
+        {
+            soundModeName = [[NSString alloc]initWithFormat:@"LIVELY"];
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+    
+    return soundModeName;
+}
+
 
 
 // twitter更新- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -Twitter管理用メソッド
 - (void)tweetRefresh{
     [tweet getTimeLine:accountIndex];
     [NSThread sleepForTimeInterval:2.5];//読み込み待ち２秒
-    self.tweetTextView.text = tweet.tweetText;//--------------ラベル表示更新
+//    self.userNameLabel.text = tweet.userName;//---------------user name更新
+    self.userNameLabel.text = [[NSString alloc]initWithFormat:@"『%@』Ball", tweet.userName];;//ボール付きのタグ
+    self.tweetTextView.text = tweet.tweetText;//--------------ツイート表示更新
     self.tweetTextView.font = [UIFont systemFontOfSize:16];
+    self.soundModeLabel.text = [self change:tweet.forSoundMode];
 
 }
 
-// 音声モード切り替え- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -音声切り替え
-- (int)soundChange:(NSUInteger)textNum{
-    
-    if (textNum < 10) {
-        return 0;
-    }else if(textNum < 50){
-        return 1;
-    }else if(textNum < 100){
-        return 2;
-    }else{
-        return 3;
-    }
-}
+
 
 
 
